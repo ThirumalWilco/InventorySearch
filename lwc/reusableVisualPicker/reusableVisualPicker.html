@@ -1,0 +1,48 @@
+<template>
+    <lightning-card>
+        <div class="slds-var-m-around_medium slds-align_absolute-center">
+            <!-- Visual Picker Options -->
+            <template if:true={showVisualPicker}>
+                <fieldset class="slds-form-element">
+                    <div class="slds-align_absolute-center">
+                        <h1 class="slds-text-heading_large slds-text-align_center slds-var-m-bottom_x-small">
+                            <b>Please select an option from below to search your Inventory</b>
+                        </h1>
+                    </div>
+                    <div
+                        class="slds-form-element__control slds-grid slds-wrap slds-grid_align-center slds-p-around_medium">
+
+                        <template for:each={productOptions} for:item="product">
+                            <div key={product.name} class="slds-col slds-size_1-of-3 slds-p-around_medium">
+                                <c-inventory-search picker-size="slds-visual-picker slds-visual-picker_large"
+                                    picker-type="radio" picker-input-id={product.id} onvalueselected={handleSelect}>
+                                    <span slot="pickertext">
+                                        <p class="slds-text-heading_large">{product.label}</p>
+                                    </span>
+                                    <span slot="pickerbody">
+                                        <p class="slds-text-title">{product.description}</p>
+                                    </span>
+                                </c-inventory-search>
+                            </div>
+                        </template>
+                    </div>
+                </fieldset>
+            </template>
+        </div>
+
+        <!-- Display selected component with "Previous" button at the bottom -->
+        <template if:true={showSerializedSearch}>
+            <c-serialized-product-transfers></c-serialized-product-transfers>
+            <div class=" slds-m-left_x-small slds-m-top_medium slds-text-align_left">
+                <lightning-button label="Previous" onclick={previousHandler} variant="neutral"></lightning-button>
+            </div>
+
+        </template>
+        <template if:true={showNonSerializedSearch}>
+            <c-non-serialized-product-transfers></c-non-serialized-product-transfers>
+            <div class="slds-m-left_x-small slds-m-top_medium slds-text-align_left">
+                <lightning-button label="Previous" onclick={previousHandler} variant="neutral"></lightning-button>
+            </div>
+        </template>
+    </lightning-card>
+</template>

@@ -1,0 +1,18 @@
+<template>
+    <lightning-card ></lightning-card>
+    <div class={pickerSize}>
+        <input type={pickerType} id={pickerInputId} value={pickerInputValue} name={pickerInputName} onchange={handleSelect}/>
+        <label for={pickerInputId}>
+            <span class="slds-visual-picker__figure slds-visual-picker__text slds-align_absolute-center">
+                <slot name="pickertext">{defaultPickerText}</slot>
+            </span>
+            <span class="slds-visual-picker__body">
+                <slot name="pickerbody">{defaultPickerBody}</slot>
+            </span>
+            <span if:true={pickerChecked} class="slds-icon_container slds-visual-picker__text-check">
+                <lightning-icon icon-name="utility:check" alternative-text="Connected" size="xx-small"
+                    title="xx-small size"></lightning-icon>
+            </span>
+        </label>
+    </div>
+</template>

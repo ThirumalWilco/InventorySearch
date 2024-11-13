@@ -1,0 +1,180 @@
+<template>
+    <lightning-card>
+        <div class="header-row">
+            <strong class="strong-text">Search Criteria for Non-Serialized Products</strong>
+        </div>
+        <lightning-layout>
+            <lightning-layout-item padding="around-small">
+                <lightning-input type="search" name="searchProduct" value={productName} placeholder="Product Name" label="Product Name" onchange={handleChange}></lightning-input>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small">
+                <lightning-input type="search" name="searchLocation" value={locationName} placeholder="Location" label="Location" onchange={handleChange}></lightning-input>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small">
+                <lightning-input type="search" name="searchProductItem" value={productItemNumber} placeholder="Product Item Number" label="Product Item" onchange={handleChange}></lightning-input>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small">
+                <lightning-combobox
+                    label="Product Family"
+                    placeholder="Select Product Family"
+                    options={productFamilyOptions}
+                    name="productFamilyCombobox"
+                    value={selectedProductFamily}
+                    onchange={handleChange} >
+                </lightning-combobox>
+				<div>
+                    <template for:each={allProductFamilyValues} for:item="val">
+                        <lightning-pill key={val} name={val} label={val} onremove={handleRemoveProductFamily}></lightning-pill>
+                    </template>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small">
+                <lightning-combobox
+                    label="Location Type"
+                    placeholder="Select Location Type"
+                    options={locationTypeOptions}
+                    name="locationTypeCombobox"
+                    value={selectedLocationType}
+                    onchange={handleChange} >
+                </lightning-combobox>
+				<div>
+                    <template for:each={allLocationTypeValues} for:item="val">
+                        <lightning-pill key={val} name={val} label={val} onremove={handleRemoveLocationType}></lightning-pill>
+                    </template>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout>
+            <lightning-layout-item padding="around-small">
+                <lightning-button label="Search" variant="brand" onclick={searchProduct}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item padding="around-small">
+                <lightning-button label="Clear Search" variant="destructive" onclick={clearSearch}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item lwc:if={isRowsSelected} padding="around-small" >
+                <lightning-button icon-name="standard:location" variant="success" label={mapButton} title="Show Map" onclick={handleShowAddress}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item lwc:if={isRowsSelected} padding="around-small">
+                <lightning-button icon-name="standard:product_transfer" variant="neutral" label="Create Product Transfer" onclick={handleSelectDestination}></lightning-button>
+            </lightning-layout-item>
+
+        </lightning-layout>
+
+        <!-- Display the Map if we have markers -->
+        <template lwc:if={isMapVisible}>
+            <lightning-map 
+                map-markers={mapMarkers} 
+                zoom-level="12" 
+                center="auto"
+                list-view="visible"
+                show-footer>
+            </lightning-map>
+        </template>
+        <!-- Lightning mapMarker is ended -->
+
+
+        <template lwc:if={data}>
+            <lightning-datatable
+            key-field="Id"
+            data={data}
+            columns={columns}
+            onrowselection={handleRowSelection}
+            sorted-by={sortBy}
+            sorted-direction={sortDirection}
+            onsort={doSorting}
+            >
+            </lightning-datatable>
+        </template>
+
+        <!-- modal start -->      
+        <template if:true={isShowModal}>
+ 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={hideDestinationModalBox}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <b>Product Transfer Destination</b>
+                </header>
+            
+                <!-- modal body start -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning-record-picker
+                        object-api-name="Location"
+                        placeholder="Search Destination Location"
+                        label="Destination Location"
+                        onchange={handleLocationRecordPickerChange}
+                        lwc:ref="locationRecordPicker">
+                    </lightning-record-picker>
+                </div>
+
+                <!-- modal footer start-->
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_brand" onclick ={submitDestinationDetails}>Submit Destination</button>
+                    <button class="slds-button slds-button_destructive" onclick={hideDestinationModalBox}>Cancel</button>
+                </footer>
+            
+            </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+        <!-- modal end -->
+
+        <!-- modal start -->      
+        <template if:true={isShowCreatePT}>
+ 
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={hideCreatePT}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <b>Create Product Transfer</b>
+                </header>
+            
+                <!-- modal body start -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                    <lightning-datatable
+                        data={productTransferData}
+                        columns={productTransferColumns}
+                        key-field="ProductItemNumber"
+                        onsave={handleSave}
+                        draft-values={draftValues}
+                        hide-checkbox-column
+                        oncellchange={handleCellChange}
+                    >
+                    </lightning-datatable>
+                </div>
+
+                <!-- modal footer start-->
+                <footer class="slds-modal__footer">
+                    <!-- button class="slds-button slds-button_brand" onclick={createProductTransfers}>Create Product Transfers</button -->
+					<button class="slds-button slds-button_brand" onclick={previousHandler}>Previous</button>
+                    <button class="slds-button slds-button_destructive" onclick={hideCreatePT}>Cancel</button>
+                </footer>
+            
+            </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+        <!-- modal end -->
+
+        <template lwc:if={error}>
+            <c-error-panel errors={error} friendly-message="Error Occured!" type="inlineMessage"></c-error-panel>
+        </template>
+    </lightning-card> 
+</template>
